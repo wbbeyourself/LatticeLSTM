@@ -1,0 +1,13 @@
+*.pkl
+*.pyc
+*.gz
+*.h5
+
+.env
+.idea/
+.settings
+.project
+
+
+test/
+test.py
