@@ -127,7 +127,7 @@ class BiLSTM(nn.Module):
         return lstm_out
 
 
-
+    # BLSTM的输入输出
     def get_output_score(self, gaz_list,  word_inputs, biword_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover):
         lstm_out = self.get_lstm_features(gaz_list, word_inputs,biword_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover)
         ## lstm_out (batch_size, sent_len, hidden_dim)

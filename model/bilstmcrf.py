@@ -37,6 +37,7 @@ class BiLSTM_CRF(nn.Module):
         outs = self.lstm.get_output_score(gaz_list, word_inputs, biword_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover)
         batch_size = word_inputs.size(0)
         seq_len = word_inputs.size(1)
+        # CRF 的解码过程，输入输出
         scores, tag_seq = self.crf._viterbi_decode(outs, mask)
         return tag_seq
 
