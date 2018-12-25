@@ -1,3 +1,4 @@
+# coding=utf-8
 """Implementation of batch-normalized LSTM."""
 import torch
 from torch import nn
@@ -5,6 +6,7 @@ import torch.autograd as autograd
 from torch.autograd import Variable
 from torch.nn import functional, init
 import numpy as np
+
 
 # 模型图里那个带阴影的红圈
 class WordLSTMCell(nn.Module):
@@ -65,6 +67,7 @@ class WordLSTMCell(nn.Module):
     def __repr__(self):
         s = '{name}({input_size}, {hidden_size})'
         return s.format(name=self.__class__.__name__, **self.__dict__)
+
 
 # 有多个绿色箭头指向的那个圈内有C的cell
 class MultiInputLSTMCell(nn.Module):

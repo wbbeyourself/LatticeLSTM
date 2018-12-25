@@ -17,7 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
-from utils.metric import get_ner_fmeasure
+from utils.metric import get_wb_fmeasure, get_ner_fmeasure
 from model.bilstmcrf import BiLSTM_CRF as SeqModel
 from utils.data import Data
 
@@ -159,7 +159,9 @@ def evaluate(data, model, name):
         gold_results += gold_label
     decode_time = time.time() - start_time
     speed = len(instances) / decode_time
-    acc, p, r, f = get_ner_fmeasure(gold_results, pred_results, data.tagScheme)
+    # 我需要重写 get_ner_fmeasure 这个函数即可
+    # acc, p, r, f = get_ner_fmeasure(gold_results, pred_results, data.tagScheme)
+    acc, p, r, f = get_wb_fmeasure(gold_results, pred_results, data.tagScheme)
     return speed, acc, p, r, f, pred_results
 
 
@@ -296,7 +298,7 @@ def train(data, save_model_dir, seg=True):
                 temp_cost = temp_time - temp_start
                 temp_start = temp_time
                 print("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
-                end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
+                    end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
                 sys.stdout.flush()
                 sample_loss = 0
             if end % data.HP_batch_size == 0:
@@ -307,11 +309,11 @@ def train(data, save_model_dir, seg=True):
         temp_time = time.time()
         temp_cost = temp_time - temp_start
         print("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
-        end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
+            end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
         epoch_finish = time.time()
         epoch_cost = epoch_finish - epoch_start
         print("Epoch: %s training finished. Time: %.2fs, speed: %.2fst/s,  total loss: %s" % (
-        idx, epoch_cost, train_num / epoch_cost, total_loss))
+            idx, epoch_cost, train_num / epoch_cost, total_loss))
         # exit(0)
         # continue
         speed, acc, p, r, f, _ = evaluate(data, model, "dev")
@@ -321,7 +323,7 @@ def train(data, save_model_dir, seg=True):
         if seg:
             current_score = f
             print("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-            dev_cost, speed, acc, p, r, f))
+                dev_cost, speed, acc, p, r, f))
         else:
             current_score = acc
             print("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f" % (dev_cost, speed, acc))
@@ -331,7 +333,10 @@ def train(data, save_model_dir, seg=True):
                 print "Exceed previous best f score:", best_dev
             else:
                 print "Exceed previous best acc score:", best_dev
-            model_name = save_model_dir + '.' + str(idx) + ".model"
+            # 应该带上分数
+            # model_name = save_model_dir + '.' + str(idx) + ".model"
+            model_name = '%s.%s_%.4f_%.4f.model' % (save_model_dir, str(idx), acc, f)
+
             torch.save(model.state_dict(), model_name)
             best_dev = current_score
             # ## decode test
@@ -340,7 +345,7 @@ def train(data, save_model_dir, seg=True):
         test_cost = test_finish - dev_finish
         if seg:
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-            test_cost, speed, acc, p, r, f))
+                test_cost, speed, acc, p, r, f))
         else:
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (test_cost, speed, acc))
         gc.collect()
@@ -365,7 +370,7 @@ def load_model_decode(model_dir, data, name, gpu, seg=True):
     time_cost = end_time - start_time
     if seg:
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-        name, time_cost, speed, acc, p, r, f))
+            name, time_cost, speed, acc, p, r, f))
     else:
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
     return pred_results
